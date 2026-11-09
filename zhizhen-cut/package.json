@@ -1,0 +1,43 @@
+{
+  "name": "zhizhen-cut",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "zhizhen-cut — a single-window video editing workbench opened from a DSH session, with multi-video import, magnetic timeline editing, audio roles, AI tools, and MP4 export.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "screenshots.json",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lizzkkafei/my-projects.git",
+    "directory": "zhizhen-cut"
+  },
+  "homepage": "https://github.com/lizzkkafei/my-projects/tree/main/zhizhen-cut"
+}

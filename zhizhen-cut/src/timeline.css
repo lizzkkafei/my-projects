@@ -1,0 +1,958 @@
+/* ==========================================================================
+   切线 Cutline — 磁吸时间线样式
+   类前缀 clt-；由 entry.js 注入在 styles.css 之后，可读取 .cl-app 上的 --cl-* 变量。
+   视觉基调：近黑轨道 #0a0b0d、标尺/工具条 #15171b、播放头橙色 #ff4d2e、
+   1px 分隔、11–12px 紧凑排版、无浏览器默认按钮样式。
+   ========================================================================== */
+
+.clt-root {
+  --clt-font: var(--cl-font, -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif);
+  --clt-mono: var(--cl-mono, ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace);
+  --clt-bg: var(--cl-bg, #0a0b0d);
+  --clt-bg-deep: var(--cl-bg-2, #0e1013);
+  --clt-panel: var(--cl-panel, #12151a);
+  --clt-panel-2: var(--cl-panel-2, #171b21);
+  --clt-panel-3: var(--cl-panel-3, #1d222a);
+  --clt-line: var(--cl-line, #232830);
+  --clt-line-2: var(--cl-line-2, #2e3540);
+  --clt-line-soft: #1a1e24;
+  --clt-text: var(--cl-text, #eef1f5);
+  --clt-text-2: var(--cl-text-2, #9aa4b2);
+  --clt-text-3: var(--cl-text-3, #6b7482);
+  --clt-accent: var(--cl-accent, #ff4d2e);
+  --clt-accent-2: var(--cl-accent-2, #ff7a5c);
+  --clt-accent-soft: var(--cl-accent-soft, rgba(255, 77, 46, 0.14));
+  --clt-skim: rgba(255, 255, 255, 0.45);
+  --clt-radius: var(--cl-radius-sm, 7px);
+  --clt-scrollbar: #2b313b;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--clt-bg);
+  color: var(--clt-text);
+  font-family: var(--clt-font);
+  font-size: 12px;
+  line-height: 1.2;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.clt-root,
+.clt-root *,
+.clt-root *::before,
+.clt-root *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- 工具条 ---------- */
+
+.clt-toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 34px;
+  padding: 0 7px;
+  border-bottom: 1px solid var(--clt-line);
+  background: linear-gradient(180deg, var(--clt-panel-2), var(--clt-panel));
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.clt-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.clt-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  min-width: 0;
+}
+
+.clt-divider {
+  flex: none;
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--clt-line-2);
+  opacity: 0.8;
+}
+
+.clt-spacer {
+  flex: 1 1 auto;
+  min-width: 8px;
+}
+
+.clt-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--clt-text-2);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.clt-btn:hover {
+  background: var(--clt-panel-3);
+  border-color: var(--clt-line-2);
+  color: var(--clt-text);
+}
+
+.clt-btn:active {
+  background: #262c35;
+  color: #fff;
+}
+
+.clt-btn:focus-visible {
+  outline: 2px solid var(--clt-accent);
+  outline-offset: 1px;
+}
+
+.clt-btn:disabled,
+.clt-btn[disabled] {
+  opacity: 0.32;
+  color: var(--clt-text-3);
+  background: transparent;
+  border-color: transparent;
+  cursor: default;
+}
+
+.clt-btn-active {
+  color: #fff;
+  background: var(--clt-accent-soft);
+  border-color: rgba(255, 77, 46, 0.48);
+}
+
+.clt-btn-active:hover {
+  background: rgba(255, 77, 46, 0.22);
+  border-color: rgba(255, 77, 46, 0.62);
+  color: #fff;
+}
+
+/* ---------- 专业模式精确读数 ---------- */
+
+.clt-readout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 24px;
+  margin: 0 6px;
+  padding: 0 10px;
+  border-left: 1px solid var(--clt-line-2);
+  border-right: 1px solid var(--clt-line-2);
+  overflow: hidden;
+}
+
+.clt-readout-label {
+  flex: none;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--clt-text-3);
+}
+
+.clt-readout-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--clt-text);
+}
+
+.clt-readout-item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: none;
+}
+
+.clt-readout-key {
+  font-size: 9px;
+  color: var(--clt-text-3);
+  letter-spacing: 0.04em;
+}
+
+.clt-readout-val {
+  font-family: var(--clt-mono);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  color: var(--clt-text);
+}
+
+/* ---------- 缩放 ---------- */
+
+.clt-zoom-group {
+  flex: none;
+  gap: 6px;
+  padding-left: 8px;
+  margin-left: 4px;
+}
+
+.clt-zoom-label {
+  flex: none;
+  font-size: 10px;
+  color: var(--clt-text-3);
+  white-space: nowrap;
+}
+
+.clt-range {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  width: 88px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.clt-range::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 77, 46, 0.5), var(--clt-line-2));
+}
+
+.clt-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  margin-top: -3.5px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: var(--clt-accent);
+  box-shadow: 0 0 0 2px rgba(255, 77, 46, 0.16);
+}
+
+.clt-range::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 77, 46, 0.5), var(--clt-line-2));
+}
+
+.clt-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  background: var(--clt-accent);
+}
+
+.clt-range:focus-visible {
+  outline: 2px solid var(--clt-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.clt-zoom-value {
+  flex: none;
+  min-width: 22px;
+  text-align: right;
+  font-family: var(--clt-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--clt-text-3);
+}
+
+/* ---------- 主体：左侧泳道标题 + 右侧滚动区 ---------- */
+
+.clt-body {
+  flex: 1 1 auto;
+  display: grid;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.clt-gutter {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--clt-panel);
+  border-right: 1px solid var(--clt-line);
+}
+
+.clt-gutter-spacer {
+  flex: none;
+  border-bottom: 1px solid var(--clt-line);
+  background: linear-gradient(180deg, var(--clt-panel-2), var(--clt-panel));
+}
+
+.clt-gutter-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  padding: 0 8px 0 10px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--clt-line-soft);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--clt-text-3);
+}
+
+.clt-gutter-video {
+  color: var(--clt-text-2);
+  font-weight: 600;
+}
+
+.clt-gutter-captions {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.clt-gutter-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clt-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- 横向滚动容器 ---------- */
+
+.clt-scroll {
+  position: relative;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: var(--clt-bg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--clt-scrollbar) transparent;
+  touch-action: pan-x;
+}
+
+.clt-scroll:hover {
+  scrollbar-color: #3a424e transparent;
+}
+
+.clt-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.clt-scroll::-webkit-scrollbar-track {
+  background: var(--clt-bg-deep);
+}
+
+.clt-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid var(--clt-bg-deep);
+  border-radius: 6px;
+  background: var(--clt-scrollbar);
+}
+
+.clt-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a424e;
+}
+
+.clt-content {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+  background: var(--clt-bg);
+}
+
+/* ---------- 标尺 ---------- */
+
+.clt-ruler {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+  border-bottom: 1px solid var(--clt-line);
+  background: linear-gradient(180deg, var(--clt-panel-2, #171b21), #15171b 58%, var(--clt-panel, #12151a));
+  cursor: ew-resize;
+}
+
+.clt-ruler-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+.clt-tick {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--clt-line-2);
+  pointer-events: none;
+}
+
+.clt-tick-minor {
+  top: auto;
+  bottom: 0;
+  height: 36%;
+  background: var(--clt-line);
+  opacity: 0.7;
+}
+
+.clt-tick-major {
+  background: #39414d;
+}
+
+.clt-tick-label {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  font-family: var(--clt-mono);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--clt-text-3);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ---------- 泳道 ---------- */
+
+.clt-lane {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--clt-line-soft);
+  background: var(--clt-bg);
+}
+
+.clt-lane-video {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), rgba(0, 0, 0, 0.18)),
+    var(--clt-bg);
+}
+
+.clt-lane-role {
+  background: var(--clt-bg-deep);
+}
+
+.clt-lane-captions {
+  border-bottom: 1px solid var(--clt-line);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+/* ---------- 片段 ---------- */
+
+.clt-clip {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #181c22;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  cursor: grab;
+  touch-action: none;
+}
+
+.clt-clip:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.clt-clip:active {
+  cursor: grabbing;
+}
+
+.clt-clip-selected {
+  z-index: 3;
+  box-shadow:
+    inset 0 0 0 1.5px var(--clt-accent),
+    0 0 0 1px rgba(255, 77, 46, 0.3),
+    0 3px 12px rgba(0, 0, 0, 0.45);
+}
+
+.clt-clip-selected:hover {
+  box-shadow:
+    inset 0 0 0 1.5px var(--clt-accent),
+    0 0 0 1px rgba(255, 77, 46, 0.45),
+    0 3px 14px rgba(0, 0, 0, 0.5);
+}
+
+.clt-clip-dragging {
+  z-index: 6;
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.clt-is-drag .clt-clip {
+  cursor: grabbing;
+}
+
+.clt-is-trim .clt-clip {
+  cursor: ew-resize;
+}
+
+.clt-clip-role {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 4;
+  width: 3px;
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.4);
+}
+
+.clt-clip-selected .clt-clip-role {
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.4), 0 0 8px rgba(255, 77, 46, 0.4);
+}
+
+.clt-clip-strip,
+.clt-clip-art {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.clt-clip-wave {
+  position: absolute;
+  left: 3px;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
+.clt-clip-wave-full {
+  top: 17px;
+  bottom: 0;
+  height: auto;
+  opacity: 0.92;
+}
+
+.clt-clip-selected .clt-wave {
+  filter: brightness(1.18);
+}
+
+.clt-clip-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 5, 7, 0.7) 0%,
+    rgba(4, 5, 7, 0.06) 28%,
+    rgba(4, 5, 7, 0) 54%,
+    rgba(4, 5, 7, 0.42) 100%
+  );
+  pointer-events: none;
+}
+
+.clt-clip-head {
+  position: absolute;
+  left: 7px;
+  right: 6px;
+  top: 3px;
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.clt-clip-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  color: #f3f5f8;
+}
+
+.clt-clip-range {
+  flex: none;
+  font-family: var(--clt-mono);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: rgba(233, 238, 246, 0.72);
+}
+
+.clt-clip-tiny .clt-clip-head {
+  display: none;
+}
+
+.clt-clip-tiny .clt-clip-shade {
+  background: rgba(4, 5, 7, 0.28);
+}
+
+.clt-clip-dragging .clt-clip-head {
+  opacity: 0.6;
+}
+
+/* ---------- trim 手柄 ---------- */
+
+.clt-trim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 6;
+  width: 9px;
+  opacity: 0;
+  cursor: ew-resize;
+  transition: opacity 0.1s ease, background 0.1s ease;
+}
+
+.clt-trim-in {
+  left: 0;
+  background: linear-gradient(90deg, rgba(255, 77, 46, 0.26), rgba(255, 77, 46, 0));
+}
+
+.clt-trim-out {
+  right: 0;
+  background: linear-gradient(270deg, rgba(255, 77, 46, 0.26), rgba(255, 77, 46, 0));
+}
+
+.clt-trim::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 2px;
+  height: 16px;
+  max-height: 46%;
+  border-radius: 2px;
+  background: var(--clt-accent);
+  box-shadow: 0 0 4px rgba(255, 77, 46, 0.7);
+  transform: translateY(-50%);
+}
+
+.clt-trim-out::after {
+  left: auto;
+  right: 2px;
+}
+
+.clt-clip:hover .clt-trim,
+.clt-clip-selected .clt-trim,
+.clt-is-trim .clt-trim {
+  opacity: 1;
+}
+
+.clt-trim:hover {
+  background: rgba(255, 77, 46, 0.32);
+}
+
+/* ---------- 波形 canvas ---------- */
+
+.clt-wave {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- 专业模式：角色泳道块 ---------- */
+
+.clt-role-block {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  z-index: 1;
+  overflow: hidden;
+  border-left: 2px solid transparent;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.clt-role-block:hover {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.clt-role-block-selected {
+  z-index: 2;
+  box-shadow:
+    inset 0 0 0 1.5px var(--clt-accent),
+    0 0 0 1px rgba(255, 77, 46, 0.28);
+}
+
+.clt-role-block-muted {
+  opacity: 0.4;
+  filter: grayscale(0.55);
+}
+
+.clt-role-block .clt-wave {
+  opacity: 0.7;
+}
+
+.clt-role-block-selected .clt-wave {
+  opacity: 0.95;
+  filter: brightness(1.15);
+}
+
+.clt-role-name {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  z-index: 2;
+  max-width: calc(100% - 12px);
+  overflow: hidden;
+  color: rgba(238, 242, 250, 0.9);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+/* ---------- 字幕泳道 ---------- */
+
+.clt-caption {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  padding: 0 7px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.035));
+  color: #e9edf3;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.clt-caption:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+}
+
+.clt-caption-selected {
+  border-color: var(--clt-accent);
+  background: linear-gradient(180deg, rgba(255, 77, 46, 0.2), rgba(255, 77, 46, 0.08));
+  box-shadow: 0 0 0 1px rgba(255, 77, 46, 0.35);
+}
+
+.clt-caption-text {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.clt-caption-meta {
+  flex: none;
+  margin-left: auto;
+  font-family: var(--clt-mono);
+  font-size: 8.5px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- 播放头 / 掠视线 / 插入指示 ---------- */
+
+.clt-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 12;
+  width: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.clt-playhead::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -0.5px;
+  width: 1.5px;
+  background: var(--clt-accent);
+  box-shadow: 0 0 6px rgba(255, 77, 46, 0.7);
+}
+
+.clt-playhead-head {
+  position: absolute;
+  top: 2px;
+  left: -6px;
+  width: 12px;
+  height: 11px;
+  background: var(--clt-accent);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  cursor: ew-resize;
+  pointer-events: auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
+
+.clt-playhead-head:hover {
+  background: var(--clt-accent-2);
+}
+
+.clt-skim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 11;
+  display: none;
+  width: 1px;
+  pointer-events: none;
+  will-change: transform;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.45) 0,
+    rgba(255, 255, 255, 0.45) 4px,
+    rgba(255, 255, 255, 0.16) 4px,
+    rgba(255, 255, 255, 0.16) 8px
+  );
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.18);
+}
+
+.clt-insert {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 14;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--clt-accent);
+  box-shadow: 0 0 10px rgba(255, 77, 46, 0.8);
+  pointer-events: none;
+}
+
+.clt-insert::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+  background: var(--clt-accent);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.clt-insert-chip {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--clt-accent);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- 空状态 ---------- */
+
+.clt-empty {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed var(--clt-line-2);
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 77, 46, 0.06), rgba(255, 77, 46, 0) 62%), var(--clt-bg);
+  color: var(--clt-text-3);
+  pointer-events: none;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.clt-empty-drop {
+  border-color: rgba(255, 77, 46, 0.7);
+  background: radial-gradient(ellipse at 50% 45%, rgba(255, 77, 46, 0.16), rgba(255, 77, 46, 0) 65%);
+  color: var(--clt-accent-2);
+}
+
+.clt-empty-icon {
+  flex: none;
+  color: var(--clt-text-3);
+  opacity: 0.5;
+}
+
+.clt-empty-drop .clt-empty-icon {
+  color: var(--clt-accent);
+  opacity: 0.9;
+}
+
+.clt-empty-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--clt-text-2);
+}
+
+.clt-empty-drop .clt-empty-title {
+  color: var(--clt-accent-2);
+}
+
+.clt-empty-hint {
+  max-width: 360px;
+  padding: 0 12px;
+  font-size: 10.5px;
+  line-height: 1.55;
+  text-align: center;
+  color: var(--clt-text-3);
+}
+
+/* ---------- 高对比 / 减少动态 ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .clt-root *,
+  .clt-root *::before,
+  .clt-root *::after {
+    transition: none !important;
+  }
+}
