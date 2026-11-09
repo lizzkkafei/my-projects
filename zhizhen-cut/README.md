@@ -69,11 +69,11 @@
 
 ## 本地背景音乐库
 
-工作区根目录的 [`music-library/`](../music-library/README.md) 里保存了 10 首不同风格的本地 MP3（晨间 / 古典 / 氛围 / 电子 / 电影感 / 暗黑 / 爵士 / 蓝调 / 轻快 / 拉丁），来自 [Incompetech](https://incompetech.com/music/royalty-free/music.html)（Kevin MacLeod），许可为 **CC BY 4.0**：可商用，但发布时需要在简介或片尾署名。
+配套的 [`music-library/`](https://github.com/lizzkkafei/lizz-DSH/tree/main/music-library) 里保存了 10 首不同风格的本地 MP3（晨间 / 古典 / 氛围 / 电子 / 电影感 / 暗黑 / 爵士 / 蓝调 / 轻快 / 拉丁），来自 [Incompetech](https://incompetech.com/music/royalty-free/music.html)（Kevin MacLeod），许可为 **CC BY 4.0**：可商用，但发布时需要在简介或片尾署名。
 
 ![背景音乐面板：只列出音频素材](preview-music.png)
 
-在音频面板点「导入音乐」选择单曲，或点「导入文件夹」直接选中整个 `music-library/` 目录批量导入；署名模板和曲目清单见该目录的 [README.md](../music-library/README.md)。
+在音频面板点「导入音乐」选择单曲，或点「导入文件夹」直接选中整个 `music-library/` 目录批量导入；署名模板和曲目清单见该目录的 [README.md](https://github.com/lizzkkafei/lizz-DSH/blob/main/music-library/README.md)。
 
 ## 快捷键
 
