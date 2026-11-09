@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>小丑之桌 · JESTER'S TABLE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="./css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230e1730'/%3E%3Ctext x='32' y='45' font-size='38' text-anchor='middle' fill='%23f3c961'%3E%E2%99%A0%3C/text%3E%3C/svg%3E">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.js",
+    "three/addons/": "./vendor/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="frame">
+  <canvas id="stage"></canvas>
+
+  <!-- 氛围叠加 -->
+  <div class="fx-grain"></div>
+  <div class="fx-vignette"></div>
+
+  <!-- 3D 小丑提示 -->
+  <div id="tip"><div class="t-nm"></div><div class="t-ds"></div><div class="t-pr"></div></div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-top">
+      <div class="badge-row">
+        <div class="badge"><span class="k">底注</span><span class="v" id="anteVal">1</span></div>
+        <div class="badge blind" id="blindBadge"><span class="k" id="blindName">小盲注</span></div>
+        <div class="badge money"><span class="k">$</span><span class="v" id="moneyVal">5</span></div>
+      </div>
+
+      <div class="scoreboard">
+        <div class="sb target"><span>目标</span><b id="targetVal">200</b></div>
+        <div class="sb score"><span>得分</span><b id="scoreVal">0</b></div>
+      </div>
+
+      <div class="badge-row">
+        <div class="badge"><span class="k">出牌</span><span class="v" id="handsVal">4</span></div>
+        <div class="badge"><span class="k">弃牌</span><span class="v" id="discardsVal">4</span></div>
+        <div class="badge"><span class="k">牌堆</span><span class="v" id="deckVal">44</span></div>
+      </div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="badge-row">
+        <div class="badge"><span class="k">小丑</span><span class="v" id="jokerVal">0/5</span></div>
+      </div>
+
+      <div class="handpanel">
+        <div class="hand-name empty" id="handName">选择 1–5 张牌</div>
+        <div class="formula">
+          <div class="cbox chips" id="chipsBox"><div class="num" id="chipsVal">0</div><div class="tag">筹码</div></div>
+          <div class="op">×</div>
+          <div class="cbox mult" id="multBox"><div class="num" id="multVal">0</div><div class="tag">倍率</div></div>
+          <div class="op">=</div>
+          <div class="cbox total" id="totalBox"><div class="num" id="totalVal">0</div><div class="tag">预计</div></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnPlay" class="btn play" disabled>出牌<small>SPACE</small></button>
+        <button id="btnDiscard" class="btn discard" disabled>弃牌<small>D</small></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div id="overlay"><div id="overlayBody"></div></div>
+  <div id="debug"></div>
+  <div id="err"></div>
+</div>
+
+<script>
+  // 任何运行期异常直接怼到屏幕上，方便排查（不会静默失败）
+  window.__errShown = false;
+  function showErr(msg) {
+    if (window.__errShown) return;
+    window.__errShown = true;
+    const el = document.getElementById('err');
+    el.textContent = '运行时错误\n\n' + msg;
+    el.classList.add('on');
+  }
+  window.addEventListener('error', e => {
+    showErr((e.message || 'unknown') + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
+  });
+  window.addEventListener('unhandledrejection', e => {
+    showErr('Promise 拒绝：' + (e.reason && (e.reason.stack || e.reason.message) || e.reason));
+  });
+</script>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
