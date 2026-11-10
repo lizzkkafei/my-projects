@@ -1,6 +1,6 @@
 # zhizhen-cardgame · 小丑之桌 JESTER'S TABLE
 
-一个以 **DSH Web UI 插件** 形式发行的三维扑克 Roguelike：从任意会话输入框左侧点「游戏」进入全屏牌桌，按 `Esc` 或右上角「返回会话」回到对话。
+一个以 **DSH Web UI 插件** 形式发行的三维扑克 Roguelike：从任意会话输入框左侧点「游戏」进入全屏牌桌；点右上角「返回会话」或按 `⌥G` 回到对话（牌桌上的 `Esc` 用于取消选牌）。
 
 ![牌桌（本地 harness 截图）](preview.jpg)
 
