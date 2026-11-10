@@ -28,23 +28,30 @@ node --test tests/engine.test.mjs
 
 ### zhizhen-cardgame · 小丑之桌 JESTER'S TABLE
 
-浏览器里的三维扑克 Roguelike：用 20 种小丑牌改写「筹码 × 倍率」，撑过 6 层底注。
+可安装的 DSH 插件：从会话输入框左侧点「游戏」（或按 ⌥G）进入全屏三维扑克 Roguelike 牌桌，用 20 种小丑牌改写「筹码 × 倍率」，撑过 6 层底注。
 
 - Three.js 实时 3D 牌桌，发牌 / 出牌 / 结算动画与辉光后期全部由代码生成
 - 12 种牌型判定，小丑从左到右逐个结算；纯逻辑与渲染分离
 - 6 层底注 × 小/大/BOSS 盲注，6 种 BOSS 干扰效果；商店买卖与重掷、金钱利息
 - 20 种小丑牌、5 个携带槽位；WebAudio 程序化音效
-- 纯静态文件，无构建步骤、无外部网络依赖（Three.js 与字体已本地化）
+- 牌桌挂在 Shadow DOM 中，样式与元素 id 不和 DSH 界面互相污染；关闭时清理渲染循环、窗口事件与 AudioContext
+- 全部资源打包进单文件 client bundle，无外部网络依赖（Three.js 与字体已本地化）
 
 目录：[`zhizhen-cardgame/`](zhizhen-cardgame/)
+
+安装（插件市场收录后也可在 设置 → 插件 → 插件市场 搜索 `zhizhen-cardgame`）：
+
+```sh
+dsh plugin --profile <profile> add github:lizzkkafei/my-projects#path:/zhizhen-cardgame
+```
+
+单独玩（不经过 DSH）：macOS 双击 [`启动游戏.command`](zhizhen-cardgame/启动游戏.command)，或本地起静态服务：
 
 ```bash
 cd zhizhen-cardgame
 python3 -m http.server 8899
 # 浏览器打开 http://localhost:8899/index.html
 ```
-
-macOS 也可直接双击 [`启动游戏.command`](zhizhen-cardgame/启动游戏.command)（自动找空闲端口并打开浏览器）。
 
 ## 许可
 

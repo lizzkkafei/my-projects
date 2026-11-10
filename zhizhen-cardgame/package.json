@@ -1,0 +1,53 @@
+{
+  "name": "zhizhen-cardgame",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "小丑之桌 JESTER'S TABLE — a 3D poker roguelike opened from a DSH session: pick 1-5 cards, chips x mult, 20 jokers, 6 antes with small/big/boss blinds and a shop.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "screenshots.json",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "game",
+    "poker",
+    "roguelike",
+    "three.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lizzkkafei/my-projects.git",
+    "directory": "zhizhen-cardgame"
+  },
+  "homepage": "https://github.com/lizzkkafei/my-projects/tree/main/zhizhen-cardgame",
+  "license": "MIT"
+}
