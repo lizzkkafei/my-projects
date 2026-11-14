@@ -20,7 +20,7 @@
     "NOTICE.md"
   ],
   "engines": {
-    "dsh": ">=0.2.0"
+    "dsh": ">=0.1.0"
   },
   "keywords": [
     "dsh",
