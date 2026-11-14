@@ -24,6 +24,24 @@ node --test tests/engine.test.mjs
 
 安装后刷新 DSH 页面以载入最新 client bundle。
 
+### dsh-gamedev-cheatsheet · 游戏开发速查
+
+可安装的 DSH 插件：给 agent 装一套 34 个概念的游戏开发技能包。
+
+- 四层结构：3D 与渲染（8）/ 手感（10）/ 系统（9）/ 性能（7）
+- 每个概念带：定义 → 何时用 → 何时**别**用 → 可粘贴提示词 → 引擎无关伪代码 → 常见错误 → 调参数值
+- 附带「症状 → 概念」路由表、默认数值表、AI 写游戏最高频的 12 个坑、交付前自查清单
+- 引擎映射覆盖 Unity、Godot 4、three.js、Phaser 3
+- 中英双语，激活时把技能投递到 `<DSH_AGENTS_HOME 或 ~/.agents>/skills/gamedev-cheatsheet`
+
+目录：[`dsh-gamedev-cheatsheet/`](dsh-gamedev-cheatsheet/)
+
+```sh
+dsh plugin --profile <profile> add github:lizzkkafei/my-projects#path:/dsh-gamedev-cheatsheet
+```
+
+安装后重启宿主并新开会话，技能目录里会出现 `gamedev-cheatsheet`。
+
 ## 游戏
 
 ### zhizhen-cardgame · 小丑之桌 JESTER'S TABLE

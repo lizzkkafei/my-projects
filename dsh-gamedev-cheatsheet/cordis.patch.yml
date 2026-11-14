@@ -1,0 +1,4 @@
+- insert:
+    - id: gamedev-cheatsheet
+      name: 'dsh-gamedev-cheatsheet'
+      config: {}

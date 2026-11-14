@@ -1,0 +1,43 @@
+{
+  "name": "dsh-gamedev-cheatsheet",
+  "version": "1.0.0",
+  "description": "Game-development concept lookup for DSH agents: 34 concepts with paste-ready prompts, engine-neutral pseudocode, tuning numbers and a pre-ship checklist. Installs the gamedev-cheatsheet skill.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "skill",
+    "README.md",
+    "NOTICE.md"
+  ],
+  "engines": {
+    "dsh": ">=0.2.0"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "agent-skills",
+    "game-development",
+    "gamedev",
+    "game-feel",
+    "unity",
+    "godot",
+    "threejs",
+    "phaser"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

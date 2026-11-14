@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Game dev cheatsheet",
+    "description": "34 game-development concepts as a built-in Agent Skill: paste-ready prompts, engine-neutral pseudocode, tuning numbers and a pre-ship checklist.",
+    "detail": "docs/DETAIL.md"
+  }
+}
