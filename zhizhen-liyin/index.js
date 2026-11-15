@@ -1,5 +1,5 @@
 /**
- * Host half of the liyin-workbench bundle.
+ * Host half of the zhizhen-liyin bundle.
  *
  * Serves the 理音 Liyin Studio web workbench under /api/liyin/* (same origin as
  * the DSH Web GUI, so iframes, audio, recording and AI calls all work), and

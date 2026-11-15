@@ -26,7 +26,7 @@ window.__ModuleLoader__.load({
     __modules["entry"] = function (module, exports, require) {
       "use strict";
 /**
- * Client half of the liyin-workbench bundle.
+ * Client half of the zhizhen-liyin bundle.
  *
  * Adds a 「理音」 entry to the session composer (conversation.input.left) and a
  * full-frame overlay (shell.overlay) that hosts the Liyin Studio web workbench
@@ -38,7 +38,7 @@ const CSS = require('./styles.css');
 
 const PACKAGE_ID = 'zhizhen-liyin';
 const LOCALE_NS = 'liyinWorkbench';
-const STYLE_ID = 'liyin-workbench-style';
+const STYLE_ID = 'zhizhen-liyin-style';
 
 const zh = {
   'entry.label': '理音',
@@ -162,7 +162,7 @@ function apply(ctx) {
     ctx.slots.register(
       {
         name: 'conversation.input.left',
-        id: 'liyin-workbench',
+        id: 'zhizhen-liyin',
         order: 18,
         locale: LOCALE_NS,
       },
@@ -174,7 +174,7 @@ function apply(ctx) {
     ctx.slots.register(
       {
         name: 'shell.overlay',
-        id: 'liyin-workbench',
+        id: 'zhizhen-liyin',
         order: 78,
         locale: LOCALE_NS,
       },
