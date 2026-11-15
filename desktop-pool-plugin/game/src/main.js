@@ -658,7 +658,12 @@ function setupUI() {
   // 三层兜底：正常松手 / 手势被系统打断 / 窗口失焦，都必须结束拖动状态。
   addEventListener('pointerup', endAimDrag);
   addEventListener('pointercancel', endAimDrag);
-  addEventListener('blur', endAimDrag);
+  addEventListener('blur', () => {
+    endAimDrag();
+    // 失焦时按键的 keyup 收不到，Shift 精调会一直卡着（角度读数常驻）。
+    // 这里直接复位，避免"状态粘住"。
+    aim.setFineMode(false);
+  });
 
   /**
    * 像素增量 → 瞄准角。
