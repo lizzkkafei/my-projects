@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>理音 Liyin Studio · 音乐创作工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ── 标题栏 ─────────────────────────────── -->
+  <header class="titlebar">
+    <div class="traffic" aria-hidden="true"><i class="t-red"></i><i class="t-yellow"></i><i class="t-green"></i></div>
+    <div class="brand"><span class="brand-mark">理音</span><span class="brand-sub">LIYIN STUDIO</span></div>
+    <div class="proj-title">镜湖 <span class="sep">/</span> <span class="proj-sub">工程 v3 · 从会话导入</span></div>
+    <div class="title-actions">
+      <span class="ai-badge" id="ai-badge"><i></i>ACE-Step 在线</span>
+      <button class="tb-btn ghost" id="btn-roadmap">能力地图</button>
+      <div class="tb-divider"></div>
+      <button class="tb-btn" id="btn-undo" title="撤销 ⌘Z">↺</button>
+      <button class="tb-btn" id="btn-redo" title="重做 ⇧⌘Z">↻</button>
+      <span class="save-state" id="save-state">已保存</span>
+      <button class="tb-btn accent" id="btn-export">导出母带</button>
+    </div>
+  </header>
+
+  <!-- ── 走带控制 ───────────────────────────── -->
+  <section class="transportbar">
+    <div class="transport-left">
+      <div class="transport-btns">
+        <button class="tbtn" data-act="to-start" title="回到开头 (↩)">⏮</button>
+        <button class="tbtn" data-act="rewind" title="倒回一小节 (←)">◀◀</button>
+        <button class="tbtn play" id="btn-play" data-act="play" title="播放 / 暂停 (空格)">▶</button>
+        <button class="tbtn" data-act="stop" title="停止 (回车)">■</button>
+        <button class="tbtn rec" id="btn-record" data-act="record" title="录音 (R)">●</button>
+        <button class="tbtn" id="btn-cycle" data-act="cycle" title="循环播放">↻</button>
+      </div>
+
+      <div class="lcd" aria-label="走带显示器">
+        <div class="lcd-main" id="lcd-pos">1 · 1 · 1 · 1</div>
+        <div class="lcd-meta">
+          <span><i>速度</i><b id="lcd-bpm">72.0</b></span>
+          <span><i>调性</i><b id="lcd-key">A min</b></span>
+          <span><i>拍号</i><b id="lcd-sig">4/4</b></span>
+          <span><i>时间</i><b id="lcd-time">0:00.0</b></span>
+        </div>
+      </div>
+
+      <div class="transport-extra">
+        <button class="pill" id="btn-metro"><i class="pill-dot"></i>节拍器</button>
+        <button class="pill" id="btn-countin"><i class="pill-dot"></i>预备拍</button>
+        <button class="pill" id="btn-follow"><i class="pill-dot"></i>跟随播放</button>
+      </div>
+    </div>
+
+    <div class="transport-right">
+      <div class="master-meter" title="主输出电平">
+        <span class="meter-label">MASTER</span>
+        <div class="meter-track"><i id="meter-master-l"></i><i id="meter-master-r"></i></div>
+      </div>
+      <div class="cpu"><span>CPU</span><b id="cpu-val">12%</b></div>
+      <div class="zoom"><span>缩放</span><input id="zoom" type="range" min="18" max="64" step="1" value="34"></div>
+    </div>
+  </section>
+
+  <!-- ── 主体 ───────────────────────────────── -->
+  <main class="main">
+    <nav class="rail" aria-label="工作区">
+      <button data-view="arrange" class="active"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.6" y="2.6" width="12.8" height="2.3" rx=".7" fill="currentColor"/><rect x="1.6" y="6.85" width="8.4" height="2.3" rx=".7" fill="currentColor"/><rect x="1.6" y="11.1" width="11.2" height="2.3" rx=".7" fill="currentColor"/></svg><em>编排</em></button>
+      <button data-view="mixer"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><g stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><line x1="4" y1="2" x2="4" y2="14"/><line x1="8" y1="2" x2="8" y2="14"/><line x1="12" y1="2" x2="12" y2="14"/></g><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="8" cy="10.2" r="1.5" fill="currentColor"/><circle cx="12" cy="4.6" r="1.5" fill="currentColor"/></svg><em>混音</em></button>
+      <button data-view="record"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="4.6" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="8" r="2.1" fill="currentColor"/></svg><em>录音</em></button>
+      <button data-view="ai" id="rail-ai"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.6l1.55 4.3L13.8 7.4 9.55 8.9 8 13.2 6.45 8.9 2.2 7.4l4.25-1.5z" fill="currentColor"/><circle cx="12.6" cy="12.2" r="1" fill="currentColor"/></svg><em>智能</em></button>
+      <button data-view="export"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v7.2M4.9 6.4L8 9.5l3.1-3.1" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M2.8 12.4h10.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><em>导出</em></button>
+    </nav>
+
+    <section class="workspace">
+      <!-- 编排视图 -->
+      <div class="arrange" id="arrange">
+        <div class="arrange-toolbar">
+          <div class="tool-group">
+            <button class="tool active" data-tool="select" title="选择工具">▷</button>
+            <button class="tool" data-tool="split" title="切割工具">✂</button>
+            <button class="tool" data-tool="draw" title="绘制工具">✎</button>
+          </div>
+          <div class="tool-group">
+            <button class="chip" id="btn-add-midi">＋ MIDI 轨</button>
+            <button class="chip" id="btn-add-audio">＋ 音频轨</button>
+            <button class="chip" id="btn-add-drum">＋ 鼓机轨</button>
+          </div>
+          <div class="tool-note">点击片段选中 · 拖动移动位置 · 双击主唱轨打开钢琴卷帘</div>
+        </div>
+        <div class="arrange-body" id="arrange-body">
+          <div class="ruler-row">
+            <div class="ruler-corner">小节</div>
+            <div class="ruler" id="ruler"></div>
+          </div>
+          <div class="tracks" id="tracks"></div>
+        </div>
+      </div>
+
+      <!-- 混音视图 -->
+      <div class="mixer-view" id="mixer-view" hidden>
+        <div class="mixer-head">
+          <div>
+            <h3>混音台</h3>
+            <p>通道条、发送、总线与自动化；推子变化会实时写入工程。</p>
+          </div>
+          <div class="mixer-head-actions">
+            <button class="chip" id="btn-auto-mix">智能混音建议</button>
+            <button class="chip" id="btn-reset-mix">重置推子</button>
+          </div>
+        </div>
+        <div class="mixer-scroll" id="mixer"></div>
+      </div>
+
+      <!-- 录音视图 -->
+      <div class="record-view" id="record-view" hidden>
+        <div class="rec-main">
+          <div class="rec-head">
+            <h3>录音</h3>
+            <p>立体声输入 · 低延迟监听 · 循环录音。录下的片段会自动放入「主唱」轨。</p>
+          </div>
+          <div class="rec-scope">
+            <canvas id="rec-wave"></canvas>
+            <div class="rec-scope-meta"><span id="rec-level-label">输入电平 −∞ dB</span><span id="rec-time">00:00.0</span></div>
+          </div>
+          <div class="rec-controls">
+            <label class="rec-select">输入设备
+              <select id="rec-input"><option>默认麦克风</option></select>
+            </label>
+            <button class="btn ghost" id="rec-arm">武装主唱轨</button>
+            <button class="btn rec" id="rec-start">● 开始录音</button>
+            <button class="btn" id="rec-stop" disabled>停止</button>
+            <label class="rec-monitor-toggle"><input type="checkbox" id="rec-monitor"> 监听</label>
+          </div>
+          <div class="rec-note">首次使用需要浏览器授权麦克风。若在本地服务下运行，录音会写入当前工程并自动保存。</div>
+        </div>
+        <div class="rec-takes">
+          <h4>TAKE 列表</h4>
+          <div id="takes"></div>
+          <div class="take-comp">
+            <div class="take-comp-head">
+              <h4>多 TAKE 合成</h4>
+              <button class="chip" id="take-compile">合成为一条</button>
+            </div>
+            <div class="take-comp-list" id="take-comp-list"></div>
+            <div class="take-comp-foot">
+              <label class="ck"><input type="checkbox" id="take-align"> 自动对齐起点</label>
+              <button class="chip" id="take-clear">清空 take</button>
+            </div>
+            <div class="mini-note" id="take-hint">多录几遍同一段，按权重混合成一条更稳的主唱。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右侧智能助手 -->
+    <aside class="inspector" id="inspector">
+      <div class="insp-tabs">
+        <button data-itab="assist" class="active">智能辅助</button>
+        <button data-itab="lyrics">歌词 / 结构</button>
+        <button data-itab="model">模型</button>
+        <button class="insp-collapse" id="insp-collapse" title="收起面板">⟩</button>
+      </div>
+
+      <div class="insp-body">
+        <!-- 智能辅助 -->
+        <div class="itab" id="itab-assist">
+          <div class="session-card">
+            <div class="sc-head"><span class="tag">会话导入</span><span class="sc-time">8 小时前</span></div>
+            <div class="sc-title">梦境《镜湖》</div>
+            <div class="sc-meta">散文 → 歌词 → MIDI 旋律 → ACE-Step 生成 3 版</div>
+            <div class="sc-chips">
+              <button class="mini-chip" data-media="ai-male">男声民谣</button>
+              <button class="mini-chip" data-media="ai-female">女声后摇</button>
+              <button class="mini-chip" data-media="ai-inst">纯器乐</button>
+              <button class="mini-chip" data-media="sketch">旋律小样</button>
+              <button class="mini-chip" data-media="ai-demo">AI 60 秒</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="ai-prompt">你想写一首什么样的歌</label>
+            <textarea id="ai-prompt" rows="2" placeholder="例如：梦里的湖面像镜子，我一个人坐在船上，天是灰的……"></textarea>
+          </div>
+
+          <div class="field">
+            <label>风格</label>
+            <div class="chips" id="ai-styles">
+              <button data-style="folk" class="active">氛围民谣</button>
+              <button data-style="postrock">后摇</button>
+              <button data-style="electronic">电子</button>
+              <button data-style="strings">弦乐四重奏</button>
+              <button data-style="chinese">中国风</button>
+            </div>
+          </div>
+
+          <div class="field sliders">
+            <div class="sl"><label>贴合原意</label><input id="ai-fit" type="range" min="0" max="100" value="72"><b id="ai-fit-v">72</b></div>
+            <div class="sl"><label>创意开放</label><input id="ai-creative" type="range" min="0" max="100" value="45"><b id="ai-creative-v">45</b></div>
+            <div class="sl"><label>编曲密度</label><input id="ai-density" type="range" min="0" max="100" value="40"><b id="ai-density-v">40</b></div>
+            <div class="sl"><label>人声</label>
+              <select id="ai-vocal"><option value="female">女声</option><option value="male" selected>男声</option><option value="instrumental">纯器乐</option></select>
+            </div>
+          </div>
+
+          <div class="ai-actions">
+            <button class="btn" id="ai-lyrics">生成歌词</button>
+            <button class="btn" id="ai-arrange">生成编曲</button>
+            <button class="btn primary" id="ai-apply">写入工程</button>
+          </div>
+
+          <div class="ai-ace">
+            <div class="ace-head">
+              <span class="dot" id="ace-dot"></span>
+              <b>ACE-Step 本地模型</b>
+              <span class="ace-state" id="ace-state">已连接</span>
+            </div>
+            <div class="ace-row">
+              <input id="ace-endpoint" value="http://127.0.0.1:8001" spellcheck="false">
+              <button class="mini" id="ace-test">检测</button>
+            </div>
+            <button class="btn wide" id="ace-generate">调用模型生成整首歌</button>
+            <div class="progress"><i id="ace-progress"></i></div>
+            <div class="ai-log" id="ai-log"></div>
+          </div>
+
+          <button class="btn wide quiet" id="ai-automix">按当前工程生成混音建议</button>
+        </div>
+
+        <!-- 歌词 -->
+        <div class="itab" id="itab-lyrics" hidden>
+          <div class="lyr-head">
+            <span>《镜湖》歌词</span>
+            <span class="lyr-sub">结构标签会被模型参考</span>
+          </div>
+          <textarea id="lyrics-editor" class="lyr-editor" spellcheck="false"></textarea>
+          <div class="lyr-actions">
+            <button class="btn" id="lyr-reflow">重整结构</button>
+            <button class="btn ghost" id="lyr-send-ace">用于 AI 生成</button>
+          </div>
+          <div class="mini-note">结构：[前奏] [主歌] [预副歌] [副歌] [桥段] [尾声]</div>
+        </div>
+
+        <!-- 模型 -->
+        <div class="itab" id="itab-model" hidden>
+          <div class="model-card">
+            <div class="model-row"><span>模型</span><b>ACE-Step 1.5 · turbo</b></div>
+            <div class="model-row"><span>编曲模型</span><b>acestep-v15-turbo（2B DiT）</b></div>
+            <div class="model-row"><span>语言模型</span><b>acestep-5Hz-lm-0.6B（Qwen3）</b></div>
+            <div class="model-row"><span>后端</span><b>MLX + MPS</b></div>
+            <div class="model-row"><span>状态</span><b id="model-state">已加载</b></div>
+          </div>
+          <div class="field">
+            <label>服务地址</label>
+            <input id="model-endpoint" value="http://127.0.0.1:8001" spellcheck="false">
+          </div>
+          <div class="field">
+            <label>启动命令</label>
+            <pre class="code" id="model-cmd">cd ACE-Step-1.5
+.venv/bin/acestep-api --host 127.0.0.1 --port 8001 \
+  --lm-model-path acestep-5Hz-lm-0.6B</pre>
+          </div>
+          <button class="btn" id="model-test">测试连接</button>
+          <div class="mini-note">本地生成会占用数分钟；生成期间音乐工作流不中断，可继续编辑。</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ── 底部编辑器 ─────────────────────────── -->
+  <section class="dock" id="dock">
+    <div class="dock-tabs">
+      <button data-dtab="piano" class="active">钢琴卷帘</button>
+      <button data-dtab="step">步进音序</button>
+      <button data-dtab="mixer">混音台</button>
+      <button data-dtab="chords">和弦 / 结构</button>
+      <button data-dtab="score">五线谱</button>
+      <button data-dtab="automation">自动化</button>
+      <button data-dtab="info">工程</button>
+      <div class="dock-right">
+        <span id="dock-title">主唱 · 旋律 MIDI 参考</span>
+        <button class="dock-collapse" id="dock-collapse" title="收起/展开">▾</button>
+      </div>
+    </div>
+
+    <div class="dock-body">
+      <!-- 钢琴卷帘 -->
+      <div class="dtab" id="dtab-piano">
+        <div class="piano-toolbar">
+          <button class="chip" id="pr-quantize">量化 1/16</button>
+          <button class="chip" id="pr-delete">删除所选</button>
+          <label class="vel">力度 <input id="pr-vel" type="range" min="30" max="110" value="78"></label>
+          <span class="hint">点击加音符 · 拖动移动 · 双击删除</span>
+        </div>
+        <div class="piano-scroll"><canvas id="piano-roll"></canvas></div>
+      </div>
+
+      <!-- 步进音序 -->
+      <div class="dtab" id="dtab-step" hidden>
+        <div class="step-toolbar">
+          <span class="hint">鼓机</span>
+          <select id="step-kit">
+            <option value="studio">Studio Kit</option>
+            <option value="brush">Brush Kit</option>
+            <option value="tape">Tape Kit</option>
+          </select>
+          <button class="chip" id="step-play">试听一小节</button>
+          <button class="chip" id="step-clear">清空</button>
+          <span class="hint" id="step-status">在副歌段落启用</span>
+        </div>
+        <div class="step-wrap">
+          <div class="step-rows" id="step-rows"></div>
+          <div class="step-foot">
+            <div class="step-labels"><span>底鼓</span><span>军鼓</span><span>踩镲</span><span>开镲</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 混音台（底部） -->
+      <div class="dtab" id="dtab-mixer" hidden>
+        <div class="mixer-mini" id="mixer-mini"></div>
+      </div>
+
+      <!-- 和弦结构 -->
+      <div class="dtab" id="dtab-chords" hidden>
+        <div class="chord-head">
+          <div class="sections" id="sections-list"></div>
+          <button class="chip" id="chord-ai">智能和弦建议</button>
+        </div>
+        <div class="chord-grid" id="chord-grid"></div>
+      </div>
+
+      <!-- 五线谱 -->
+      <div class="dtab" id="dtab-score" hidden>
+        <div class="score-toolbar">
+          <div class="seg" id="score-part">
+            <button data-score-part="lead" class="active">旋律</button>
+            <button data-score-part="piano">钢琴</button>
+            <button data-score-part="all">全部</button>
+          </div>
+          <label class="ck"><input type="checkbox" id="score-chords" checked> 和弦</label>
+          <label class="ck"><input type="checkbox" id="score-sections" checked> 段落</label>
+          <label class="ck"><input type="checkbox" id="score-follow" checked> 跟随播放</label>
+          <button class="chip" id="score-zoom-out">−</button>
+          <span class="score-zoom" id="score-zoom-label">100%</span>
+          <button class="chip" id="score-zoom-in">＋</button>
+          <button class="chip" id="score-png">导出 PNG</button>
+          <span class="hint" id="score-hint">大谱表 · 4/4 · A 小调</span>
+        </div>
+        <div class="score-scroll" id="score-scroll">
+          <canvas id="score-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- 自动化 -->
+      <div class="dtab" id="dtab-automation" hidden>
+        <div class="auto-toolbar">
+          <label class="auto-pick">轨道
+            <select id="auto-track"></select>
+          </label>
+          <div class="seg" id="auto-param">
+            <button data-auto-param="volume" class="active">音量</button>
+            <button data-auto-param="pan">声像</button>
+            <button data-auto-param="rev">混响</button>
+            <button data-auto-param="dly">延迟</button>
+          </div>
+          <label class="ck"><input type="checkbox" id="auto-enabled"> 启用自动化</label>
+          <button class="chip" id="auto-shape-fade">淡入淡出</button>
+          <button class="chip" id="auto-shape-swell">副歌渐强</button>
+          <button class="chip" id="auto-clear">清除</button>
+          <span class="hint" id="auto-hint">拖动控制点 · 双击删除 · 空白处点击加点</span>
+        </div>
+        <div class="auto-wrap">
+          <div class="auto-scale" id="auto-scale"></div>
+          <div class="auto-canvas-wrap">
+            <canvas id="auto-canvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- 工程信息 -->
+      <div class="dtab" id="dtab-info" hidden>
+        <div class="info-grid">
+          <div class="info-card">
+            <h4>工程</h4>
+            <div class="kv"><span>名称</span><b>镜湖</b></div>
+            <div class="kv"><span>小节</span><b>68 · 4/4</b></div>
+            <div class="kv"><span>速度 / 调性</span><b>72 BPM · A 小调</b></div>
+            <div class="kv"><span>时长</span><b id="info-duration">3:47</b></div>
+            <div class="kv"><span>最后保存</span><b id="info-saved">刚刚</b></div>
+          </div>
+          <div class="info-card">
+            <h4>会话链路</h4>
+            <ol class="chain">
+              <li>梦境口述 → 散文《镜湖》</li>
+              <li>散文 → 歌词（主歌/副歌/桥段）</li>
+              <li>歌词 → 旋律小样（MIDI）</li>
+              <li>ACE-Step → 男声民谣 / 女声后摇 / 纯器乐</li>
+              <li>进入工程 → 编曲 / 混音 / 导出母带</li>
+            </ol>
+          </div>
+          <div class="info-card">
+            <h4>当前状态</h4>
+            <div class="kv"><span>轨道</span><b id="info-tracks">5</b></div>
+            <div class="kv"><span>片段</span><b id="info-regions">6</b></div>
+            <div class="kv"><span>撤销历史</span><b id="info-undo">0</b></div>
+            <div class="kv"><span>自动保存</span><b>已开启</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 状态栏 ─────────────────────────────── -->
+  <footer class="statusbar">
+    <span>采样率 48 kHz · 24 bit</span>
+    <span>缓冲区 256</span>
+    <span id="status-ai">AI 服务：已连接</span>
+    <span id="status-sel">未选中片段</span>
+    <span class="status-right">⌘S 保存工程 · 空格 播放 / 停止 · R 录音</span>
+  </footer>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<div id="modal-root"></div>
+
+<script src="data.js"></script>
+<script src="notation.js"></script>
+<script src="engine.js"></script>
+<script src="ai.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

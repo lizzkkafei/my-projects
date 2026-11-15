@@ -1,0 +1,55 @@
+{
+  "name": "zhizhen-liyin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "zhizhen-liyin — an AI-native music production workbench opened from a DSH session: multitrack arrangement, piano roll, score, recording, mixing, automation, and master/stem export with loudness normalization.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "docs",
+    "web",
+    "README.md"
+  ],
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.1.5-rc.1"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lizzkkafei/my-projects.git",
+    "directory": "zhizhen-liyin"
+  },
+  "homepage": "https://github.com/lizzkkafei/my-projects/tree/main/zhizhen-liyin",
+  "keywords": [
+    "dsh-plugin",
+    "music",
+    "daw",
+    "ai-music",
+    "ace-step"
+  ],
+  "license": "MIT"
+}

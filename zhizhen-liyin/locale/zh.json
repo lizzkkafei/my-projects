@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "理音 Liyin Studio",
+    "description": "从 DSH 会话进入的 AI 音乐创作工作台。多轨 MIDI 与音频编排、钢琴卷帘、大谱表五线谱、录音与多 take 合成、带自动化曲线的混音，以及带响度规范化的母带与分轨导出。",
+    "detail": "docs/DETAIL.zh.md"
+  }
+}

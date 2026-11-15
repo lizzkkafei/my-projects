@@ -1,0 +1,124 @@
+/* 理音 · DSH 会话入口与全屏工作台 */
+
+.liyin-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  margin: 0 2px;
+  border-radius: 7px;
+  border: 1px solid rgba(120, 130, 140, 0.28);
+  background: linear-gradient(180deg, rgba(38, 40, 45, 0.92), rgba(28, 30, 34, 0.92));
+  color: #d7d5d0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+.liyin-entry:hover {
+  color: #f2f0ea;
+  border-color: rgba(85, 195, 188, 0.55);
+  background: linear-gradient(180deg, rgba(44, 50, 52, 0.95), rgba(30, 36, 38, 0.95));
+}
+.liyin-entry.is-open {
+  color: #071817;
+  border-color: #2f8f89;
+  background: linear-gradient(180deg, #6fd8d1, #46a8a1);
+}
+.liyin-entry-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #55c3bc;
+  box-shadow: 0 0 7px rgba(85, 195, 188, 0.65);
+  flex: 0 0 7px;
+}
+.liyin-entry.is-open .liyin-entry-dot {
+  background: #0d2624;
+  box-shadow: none;
+}
+.liyin-entry-label {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.liyin-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  background: #151619;
+  animation: liyin-overlay-in 160ms ease-out;
+}
+@keyframes liyin-overlay-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.liyin-overlay-bar {
+  flex: 0 0 38px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #2a2b31, #212227);
+  border-bottom: 1px solid #0d0e10;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+}
+.liyin-overlay-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.liyin-brand-mark {
+  color: #f0eee8;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+.liyin-brand-sub {
+  color: #6f6f75;
+  font-size: 8px;
+  letter-spacing: 0.24em;
+}
+.liyin-brand-tag {
+  color: #55c3bc;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(85, 195, 188, 0.3);
+  background: rgba(85, 195, 188, 0.07);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.liyin-overlay-hint {
+  color: #8b8a90;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+.liyin-overlay-close {
+  margin-left: auto;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 5px;
+  border: 1px solid #3d3e46;
+  background: linear-gradient(180deg, #383941, #2d2e35);
+  color: #b9b7b2;
+  font-size: 10.5px;
+  cursor: pointer;
+}
+.liyin-overlay-close:hover {
+  color: #f0eee8;
+  border-color: #4d4e57;
+}
+.liyin-overlay-frame {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #18191c;
+}

@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Liyin Studio",
+    "description": "An AI-native music production workbench opened from a DSH session. Arrange multitrack MIDI and audio, edit in a piano roll or grand staff score, record takes, mix with automation curves, and export a master or stems with loudness normalization.",
+    "detail": "docs/DETAIL.md"
+  }
+}

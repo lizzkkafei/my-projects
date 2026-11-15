@@ -24,6 +24,26 @@ node --test tests/engine.test.mjs
 
 安装后刷新 DSH 页面以载入最新 client bundle。
 
+### zhizhen-liyin · 理音 Liyin Studio
+
+从 DSH 会话进入的 AI 音乐创作工作台，Logic 风格界面、中文优先。
+
+- 多轨 MIDI / 音频 / 鼓机编排，段落标记、片段拖动、撤销历史、自动保存
+- 钢琴卷帘（加/移/删音符、1/16 量化、试听）、16 步鼓机、大谱表五线谱（和弦 + 段落 + PNG 导出）
+- 立体声录音与多 take 合成（权重混合、自动对齐、软限幅）
+- 混音台 + 音量/声像/混响/延迟四条自动化曲线，播放与离线渲染均生效
+- 智能辅助：本地歌词/编曲生成器（五种风格、三个可调滑杆），并可调用本机 ACE-Step 1.5 生成整首歌
+- 导出母带 / 分轨 ZIP / 主唱干声 / 伴奏，带 −14 / −16 / −9 LUFS 响度规范化
+- 自带《镜湖》示例工程：72 BPM / A 小调 / 68 小节 + 4 条 AI 生成音频
+
+目录：[`zhizhen-liyin/`](zhizhen-liyin/)
+
+```sh
+dsh plugin --profile <profile> add github:lizzkkafei/my-projects#path:/zhizhen-liyin
+```
+
+安装后重启 DSH，会话输入框左侧出现「理音」按钮（或按 ⌥M）。
+
 ### dsh-gamedev-cheatsheet · 游戏开发速查
 
 可安装的 DSH 插件：给 agent 装一套 34 个概念的游戏开发技能包。
