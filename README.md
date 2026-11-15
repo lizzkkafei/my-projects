@@ -91,6 +91,34 @@ python3 -m http.server 8899
 # 浏览器打开 http://localhost:8899/index.html
 ```
 
+### zhizhen-pool · 桌面台球 黑八
+
+可安装的 DSH 插件：从会话输入框左侧点「台球」（或按 ⌥P）展开全屏三维 8 球球台，按 WPA 规则与 AI 对手对局。
+
+- 9ft 比赛台（2.54 × 1.27 m）、Ø57.15 mm 用球，六袋口按真实尺寸建模
+- 三段式摩擦物理（滑动 → 滚动 → 自旋衰减）：低杆回拉、高杆跟进、左右塞吃库变线都是算出来的，不是预设动画
+- 球-球切向冲量带来真实的 throw 偏移；库边接触点高于球心，撞库会「咬」一下
+- WPA 8 球规则：开球、花色分组、犯规判定、手中球、8 号球胜负
+- AI 对手会枚举「目标球 × 袋口」的可行击球并评分，带难度误差与走位
+- 全程序化素材与音效：台布编织纹、木纹、球面号码圈、撞球/吃库/落袋音全部代码生成，无外部资源
+- 球台挂在 Shadow DOM 中；关闭时回收渲染循环、窗口事件与 AudioContext
+
+目录：[`desktop-pool-plugin/`](desktop-pool-plugin/)
+
+安装（插件市场收录后也可在 设置 → 插件 → 插件市场 搜索 `zhizhen-pool`）：
+
+```sh
+dsh plugin --profile <profile> add github:lizzkkafei/my-projects#path:/desktop-pool-plugin
+```
+
+单独玩（不经过 DSH）：直接双击 [`game/index.html`](desktop-pool-plugin/game/index.html)，或本地起静态服务：
+
+```bash
+cd desktop-pool-plugin/game
+python3 -m http.server 8898
+# 浏览器打开 http://localhost:8898/index.html
+```
+
 ## 许可
 
 MIT，见 [`LICENSE`](LICENSE)。

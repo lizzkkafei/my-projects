@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#d9b45b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 黑八：外球体 + 白圈 + 数字 8 -->
+  <circle cx="11" cy="13" r="8.1"/>
+  <circle cx="11" cy="13" r="3.5" fill="#0b1016" stroke="#d9b45b" stroke-width="1.2"/>
+  <text x="11" y="13.1" text-anchor="middle" dominant-baseline="central"
+        font-family="Helvetica, Arial, sans-serif" font-size="4.6" font-weight="700"
+        fill="#d9b45b" stroke="none">8</text>
+  <!-- 球杆，斜穿过台面 -->
+  <path d="M12.6 10.4 21.8 3.2" stroke="#d9b45b" stroke-width="1.5"/>
+  <path d="M19.9 4.7 21.8 3.2" stroke="#8fd8ff" stroke-width="1.5"/>
+  <!-- 台面高光 -->
+  <path d="M5.6 9.2a6.4 6.4 0 0 1 3.1-3.4" opacity=".55" stroke-width="1.3"/>
+</svg>

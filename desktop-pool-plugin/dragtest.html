@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;background:#111}</style></head><body>
+<script>
+const FakeReact={createElement:(t,p,...k)=>({t,p,k}),useState:i=>[typeof i==='function'?i():i,()=>{}],
+ useEffect:()=>{},useLayoutEffect:()=>{},useRef:()=>({current:null})};
+window.__ModuleLoader__={load({id,factory}){window.__PLUGIN=factory(n=>{if(n==='react')return FakeReact;throw new Error(n);});}};
+window.__LOG=[]; window.addEventListener('error',e=>window.__LOG.push('ERR:'+e.message));
+</script>
+<script src="./client.js"></script>
+<script>
+window.addEventListener('load', async () => {
+  const api=window.__PLUGIN;
+  api.__debug.openTable();
+  await new Promise(r=>setTimeout(r,5000));
+  // place the cue ball so the game enters 'ready'
+  const sh=document.querySelector('.zp-overlay .zp-stage').shadowRoot;
+  const c=sh.getElementById('c');
+  const r=c.getBoundingClientRect();
+  for (let y=140; y<r.height-120; y+=60){
+    for (let x=200; x<r.width-200; x+=80){
+      c.dispatchEvent(new MouseEvent('click',{clientX:x,clientY:y,bubbles:true}));
+      await new Promise(z=>setTimeout(z,30));
+      if (window.__DBG && window.__DBG().state==='ready') { window.__LOG.push('placed at '+x+','+y); return; }
+    }
+  }
+  window.__LOG.push('could not place');
+});
+</script>
+</body></html>

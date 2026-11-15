@@ -1,0 +1,55 @@
+{
+  "name": "zhizhen-pool",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "桌面台球 · 黑八 — a 3D eight-ball pool table opened from a DSH session: real cushion/rolling physics, british-english spin control, procedural Web Audio, and a rules-accurate 8-ball engine vs an AI opponent.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "screenshots.json",
+    "README.md",
+    "docs/DETAIL.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  },
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "game",
+    "billiards",
+    "pool",
+    "eight-ball",
+    "three.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lizzkkafei/my-projects.git",
+    "directory": "desktop-pool-plugin"
+  },
+  "homepage": "https://github.com/lizzkkafei/my-projects/tree/main/desktop-pool-plugin",
+  "license": "MIT"
+}

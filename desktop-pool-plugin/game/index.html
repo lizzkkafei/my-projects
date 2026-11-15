@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>台球 · 黑八</title>
+<style>
+  :root {
+    --ink: #e8eef6;
+    --muted: #8b9bb0;
+    --gold: #d9b45b;
+    --green: #2fbf8f;
+    --felt: #0b5c3a;
+    --panel: rgba(12, 16, 22, 0.82);
+    --stroke: rgba(255, 255, 255, 0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; overflow: hidden; background: #05070a;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC",
+                 "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: var(--ink); -webkit-font-smoothing: antialiased;
+  }
+  #c { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+
+  /* ---------------- 顶部计分板 ---------------- */
+  #scoreboard {
+    position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: stretch; gap: 0;
+    background: var(--panel); backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid var(--stroke); border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07);
+    overflow: hidden; z-index: 20; user-select: none;
+  }
+  .player {
+    display: flex; align-items: center; gap: 13px;
+    padding: 11px 20px; min-width: 210px;
+    transition: background .35s;
+    position: relative;
+  }
+  .player + .player { border-left: 1px solid var(--stroke); }
+  .player.active { background: rgba(217, 180, 91, 0.10); }
+  .player.active::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex: 0 0 auto;
+    display: grid; place-items: center; font-weight: 700; font-size: 15px;
+    border: 1px solid rgba(255,255,255,.18);
+  }
+  .avatar.you { background: linear-gradient(145deg, #2c6f8f, #163b52); }
+  .avatar.ai  { background: linear-gradient(145deg, #7a3b52, #3d1a28); }
+  .pmeta { display: flex; flex-direction: column; gap: 3px; }
+  .pname { font-size: 13.5px; font-weight: 600; letter-spacing: .02em; }
+  .grp {
+    font-size: 10.5px; color: var(--muted); letter-spacing: .06em;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .grp::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: #445; display: block;
+  }
+  .grp.solid::before { background: #f2c012; }
+  .grp.stripe::before { background: linear-gradient(90deg,#fff 50%, #1d4ed8 50%); }
+  .pscore {
+    margin-left: auto; font-size: 26px; font-weight: 700;
+    font-variant-numeric: tabular-nums; color: var(--gold);
+    text-shadow: 0 0 24px rgba(217,180,91,.45);
+    min-width: 36px; text-align: right;
+  }
+  #centerInfo {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 0 18px; min-width: 118px;
+  }
+  #remInfo { font-size: 10.5px; color: var(--muted); letter-spacing: .05em; text-align: center; }
+  #fps {
+    position: fixed; bottom: 10px; left: 12px; font-size: 10px;
+    font-family: ui-monospace, Menlo, monospace; color: rgba(255,255,255,.22);
+    z-index: 5; pointer-events: none;
+  }
+
+  /* ---------------- 提示条 ---------------- */
+  #toast {
+    position: fixed; top: 108px; left: 50%; transform: translate(-50%, -12px);
+    padding: 11px 26px; border-radius: 999px;
+    background: rgba(10, 14, 20, .88); backdrop-filter: blur(14px);
+    border: 1px solid var(--stroke);
+    font-size: 13.5px; letter-spacing: .02em; white-space: nowrap;
+    opacity: 0; transition: opacity .28s, transform .28s; pointer-events: none;
+    z-index: 25; box-shadow: 0 8px 30px rgba(0,0,0,.45);
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #toast.foul { border-color: rgba(240, 90, 70, .55); color: #ffb4a4; }
+  #toast.good { border-color: rgba(60, 200, 140, .5); color: #a8f5cf; }
+
+  /* ---------------- 底部控制区 ---------------- */
+  #dock {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px;
+    z-index: 20; user-select: none;
+  }
+  .pad {
+    background: var(--panel); backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    border: 1px solid var(--stroke); border-radius: 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    padding: 12px 16px;
+  }
+
+  /* 杆法盘 */
+  #spinWrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  #spinPad {
+    position: relative; width: 74px; height: 74px; border-radius: 50%;
+    background:
+      radial-gradient(circle at 34% 30%, rgba(255,255,255,.96) 0%, rgba(240,238,228,.92) 42%, rgba(214,210,196,.85) 72%, rgba(170,166,152,.8) 100%);
+    box-shadow: inset 0 -4px 12px rgba(0,0,0,.28), inset 0 3px 10px rgba(255,255,255,.6), 0 4px 14px rgba(0,0,0,.4);
+    cursor: grab; touch-action: none;
+  }
+  #spinPad:active { cursor: grabbing; }
+  #spinPad::before, #spinPad::after {
+    content: ''; position: absolute; background: rgba(0,0,0,.14);
+  }
+  #spinPad::before { left: 50%; top: 8px; bottom: 8px; width: 1px; transform: translateX(-.5px); }
+  #spinPad::after { top: 50%; left: 8px; right: 8px; height: 1px; transform: translateY(-.5px); }
+  #spinDot {
+    position: absolute; left: 50%; top: 50%; width: 17px; height: 17px;
+    margin: -8.5px 0 0 -8.5px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #8fd8ff, #1f6fa8 60%, #0d3a5c);
+    box-shadow: 0 0 10px rgba(70,170,255,.8), inset 0 1px 2px rgba(255,255,255,.7);
+    transition: transform .05s;
+  }
+  .padLabel { font-size: 10px; color: var(--muted); letter-spacing: .14em; text-transform: uppercase; }
+
+  /* 力度条 */
+  #powerWrap { display: flex; flex-direction: column; gap: 7px; width: 260px; }
+  #powerTrack {
+    height: 12px; border-radius: 6px; background: rgba(0,0,0,.5);
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.7); overflow: hidden; position: relative;
+    border: 1px solid rgba(255,255,255,.06);
+  }
+  #powerFill {
+    height: 100%; width: 55%; border-radius: 5px;
+    background: linear-gradient(90deg,#5fd0ff,#7bdca4);
+    transition: width .05s linear, background .2s;
+    box-shadow: 0 0 12px rgba(120,220,180,.5);
+  }
+  #powerTrack::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0 24px, rgba(0,0,0,.35) 24px 25px);
+    pointer-events: none;
+  }
+  #powerRow { display: flex; justify-content: space-between; align-items: baseline; }
+  #powerVal { font-size: 11px; color: var(--gold); font-variant-numeric: tabular-nums; font-weight: 600; }
+  #powerTip { font-size: 10px; color: var(--muted); }
+
+  /* 按钮组 */
+  #btns { display: flex; gap: 8px; }
+  .btn {
+    width: 46px; height: 46px; border-radius: 13px; border: 1px solid var(--stroke);
+    background: var(--panel); backdrop-filter: blur(14px);
+    color: var(--ink); cursor: pointer; display: grid; place-items: center;
+    transition: all .18s; font-size: 17px;
+  }
+  .btn:hover { background: rgba(40,52,68,.9); transform: translateY(-2px); border-color: rgba(217,180,91,.4); }
+  .btn:active { transform: translateY(0); }
+  .btn.off { opacity: .38; }
+  .btn svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  /* ---------------- 精调角度读数 ---------------- */
+  #fineReadout {
+    position: fixed; bottom: 168px; left: 50%; transform: translateX(-50%) translateY(6px);
+    padding: 6px 16px; border-radius: 999px;
+    background: rgba(12,16,22,.85); backdrop-filter: blur(14px);
+    border: 1px solid rgba(217,180,91,.45);
+    color: var(--gold); font-size: 12.5px; font-weight: 600;
+    font-variant-numeric: tabular-nums; letter-spacing: .04em;
+    opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none;
+    z-index: 24;
+  }
+  #fineReadout.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------------- 手中球提示 ---------------- */
+  #placeHint {
+    position: fixed; bottom: 150px; left: 50%; transform: translateX(-50%) translateY(10px);
+    padding: 12px 28px; border-radius: 14px;
+    background: rgba(217,180,91,.14); border: 1px solid rgba(217,180,91,.45);
+    color: #f0dcae; font-size: 13.5px; letter-spacing: .03em;
+    opacity: 0; transition: all .3s; pointer-events: none; z-index: 22;
+    backdrop-filter: blur(12px);
+  }
+  #placeHint.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------------- 说明面板 ---------------- */
+  #panel {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(.96);
+    width: min(560px, 92vw); max-height: 78vh; overflow-y: auto;
+    background: rgba(10, 14, 20, .96); backdrop-filter: blur(24px);
+    border: 1px solid var(--stroke); border-radius: 20px; padding: 30px 34px;
+    opacity: 0; pointer-events: none; transition: all .28s; z-index: 60;
+    box-shadow: 0 30px 80px rgba(0,0,0,.7);
+  }
+  #panel.show { opacity: 1; pointer-events: auto; transform: translate(-50%,-50%) scale(1); }
+  #panel h2 { font-size: 19px; margin-bottom: 6px; letter-spacing: .02em; }
+  #panel .sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  #panel h3 { font-size: 12px; color: var(--gold); letter-spacing: .12em; text-transform: uppercase; margin: 20px 0 10px; }
+  .krow { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 13px; }
+  .krow span:first-child { color: var(--muted); }
+  kbd {
+    display: inline-block; padding: 2px 7px; border-radius: 5px;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+    font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--ink);
+  }
+  .ruletxt { font-size: 12.5px; color: #aab6c6; line-height: 1.85; }
+  .ruletxt b { color: var(--ink); font-weight: 600; }
+
+  /* ---------------- 结束画面 ---------------- */
+  #endScreen {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    background: rgba(4,6,9,.82); backdrop-filter: blur(10px);
+    opacity: 0; pointer-events: none; transition: opacity .5s; z-index: 70;
+  }
+  #endScreen.show { opacity: 1; pointer-events: auto; }
+  /* 礼花画布：铺满整屏，在卡片下方（z-index 更低） */
+  #confetti {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 1;
+  }
+  .endCard { text-align: center; position: relative; z-index: 2; }
+
+  /* 胜利时的徽标（奖杯） */
+  #endBadge {
+    font-size: 52px; line-height: 1; margin-bottom: 8px;
+    opacity: 0; transform: scale(.4) rotate(-12deg);
+    transition: opacity .5s, transform .6s cubic-bezier(.2,1.5,.4,1);
+  }
+  #endScreen.show #endBadge.win { opacity: 1; transform: scale(1) rotate(0); }
+  #endBadge.lose { display: none; }
+  #endTitle { font-size: 64px; font-weight: 800; letter-spacing: .06em; margin-bottom: 14px; }
+  #endTitle.win {
+    background: linear-gradient(180deg, #ffe7a3, #d9b45b 55%, #a87c22);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 6px 30px rgba(217,180,91,.45));
+  }
+  #endTitle.lose {
+    background: linear-gradient(180deg, #b9c4d2, #6b7788 55%, #454e5c);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  #endMsg { font-size: 14px; color: var(--muted); margin-bottom: 30px; }
+  #btnPlayAgain {
+    padding: 13px 40px; border-radius: 999px; cursor: pointer;
+    background: linear-gradient(145deg, #d9b45b, #a87c22);
+    border: none; color: #1a1206; font-size: 14px; font-weight: 700;
+    letter-spacing: .06em; box-shadow: 0 10px 30px rgba(217,180,91,.35);
+    transition: transform .2s, box-shadow .2s;
+  }
+  #btnPlayAgain:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(217,180,91,.5); }
+
+  /* ---------------- Loading ---------------- */
+  #loading {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    background: #05070a; z-index: 100; transition: opacity .6s;
+  }
+  #loading.done { opacity: 0; pointer-events: none; visibility: hidden; }
+  .spin {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid rgba(217,180,91,.2); border-top-color: var(--gold);
+    animation: rot .9s linear infinite;
+  }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* ---------------- 启动失败提示 ---------------- */
+  #loading.fatal {
+    background: #0a0d12;
+    display: grid; place-items: center; padding: 24px;
+  }
+  .fatal-box {
+    max-width: 620px; text-align: left;
+    border: 1px solid rgba(240,90,70,.45);
+    background: rgba(30,12,12,.85); border-radius: 14px; padding: 26px 30px;
+  }
+  .fatal-title { font-size: 17px; font-weight: 700; color: #ff8f7a; margin-bottom: 12px; }
+  .fatal-detail {
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.7;
+    color: #d8c8c4; word-break: break-word; margin-bottom: 16px;
+    background: rgba(0,0,0,.35); padding: 12px 14px; border-radius: 8px;
+  }
+  .fatal-hint { font-size: 12.5px; line-height: 1.9; color: #8b9bb0; }
+  .fatal-hint code {
+    background: rgba(255,255,255,.09); padding: 2px 6px; border-radius: 4px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: #e8eef6;
+  }
+
+  @media (max-width: 860px) {
+    .player { min-width: 150px; padding: 9px 13px; }
+    #powerWrap { width: 150px; }
+    #dock { gap: 10px; bottom: 14px; }
+    .pad { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- 计分板 -->
+<div id="scoreboard">
+  <div class="player active" id="p0">
+    <div class="avatar you">你</div>
+    <div class="pmeta">
+      <div class="pname">玩家</div>
+      <div class="grp" id="g0">待定</div>
+    </div>
+    <div class="pscore" id="s0">0</div>
+  </div>
+  <div id="centerInfo">
+    <div id="remInfo">开球</div>
+  </div>
+  <div class="player" id="p1">
+    <div class="avatar ai">AI</div>
+    <div class="pmeta">
+      <div class="pname">对手</div>
+      <div class="grp" id="g1">待定</div>
+    </div>
+    <div class="pscore" id="s1">0</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="fineReadout">0.000°</div>
+<div id="placeHint">点击台面摆放母球</div>
+
+<!-- 底部控制 -->
+<div id="dock">
+  <div class="pad" id="spinWrap">
+    <div id="spinPad"><div id="spinDot"></div></div>
+    <div class="padLabel">杆法</div>
+  </div>
+
+  <div class="pad" id="powerWrap">
+    <div id="powerRow">
+      <span class="padLabel">力度</span>
+      <span id="powerVal">55%</span>
+    </div>
+    <div id="powerTrack"><div id="powerFill"></div></div>
+    <div id="powerTip">按住 <kbd>空格</kbd> 蓄力 · 松开击球</div>
+  </div>
+
+  <div id="btns">
+    <button class="btn" id="btnCam" title="切换视角 (T)">
+      <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
+    <button class="btn" id="btnGuide" title="辅助线 (G)">
+      <svg viewBox="0 0 24 24"><path d="M3 21L21 3"/><circle cx="6" cy="18" r="2.2"/></svg>
+    </button>
+    <button class="btn" id="btnSound" title="声音">
+      <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9a4 4 0 010 6"/></svg>
+    </button>
+    <button class="btn" id="btnHelp" title="规则与操作 (Esc)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.7-2.5 2-2.5 3.5"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
+    </button>
+    <button class="btn" id="btnRestart" title="重新开始 (R)">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9"/><path d="M3 4v5h5"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- 说明 -->
+<div id="panel">
+  <h2>台球 · 黑八</h2>
+  <div class="sub">标准 8 球规则 · 物理参数取自真实台球模型</div>
+
+  <h3>操作</h3>
+  <div class="krow"><span>瞄准</span><span>移动鼠标</span></div>
+  <div class="krow"><span>瞄准粗调 0.10°</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
+  <div class="krow"><span>瞄准细调 0.01°</span><span><kbd>Shift</kbd> + <kbd>←</kbd> <kbd>→</kbd></span></div>
+  <div class="krow"><span>超精调 0.001°</span><span><kbd>,</kbd> <kbd>.</kbd></span></div>
+  <div class="krow"><span>鼠标精调</span><span>按住 <kbd>Shift</kbd> 移动鼠标</span></div>
+  <div class="krow"><span>蓄力 / 击球</span><span>按住 <kbd>空格</kbd> 松开</span></div>
+  <div class="krow"><span>杆法（塞）</span><span>拖动左下角白球</span></div>
+  <div class="krow"><span>切换视角</span><span><kbd>T</kbd></span></div>
+  <div class="krow"><span>辅助线开关</span><span><kbd>G</kbd></span></div>
+  <div class="krow"><span>重新开始</span><span><kbd>R</kbd></span></div>
+
+  <h3>规则要点</h3>
+  <div class="ruletxt">
+    <b>开球</b>：母球置于头线后，击散球堆。开球进球不换手。<br />
+    <b>分组</b>：第一杆合法进袋后确定花色（全色 1-7 / 花色 9-15）。<br />
+    <b>犯规</b>：母球落袋、先碰错球、空杆、碰球后无球吃库 — 对手获得<b>手中球</b>，可自由摆放母球。<br />
+    <b>获胜</b>：清完己方花色后，合法打进 8 号球即获胜；提前打进 8 号则判负。
+  </div>
+
+  <h3>物理</h3>
+  <div class="ruletxt">
+    滑动 / 滚动 / 旋转三段摩擦模型，球-球恢复系数 0.95，库边 0.85，
+    带切向摩擦与库边接触点高度计算，因此薄球有真实的 throw 偏移、
+    低杆能拉回、高低塞吃库后变线。
+  </div>
+</div>
+
+<!-- 结束 -->
+<div id="endScreen">
+  <canvas id="confetti"></canvas>
+  <div class="endCard">
+    <div id="endBadge"></div>
+    <div id="endTitle">胜利</div>
+    <div id="endMsg"></div>
+    <button id="btnPlayAgain">再来一局</button>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loading"><div class="spin"></div></div>
+
+<script>
+  // 首帧真正渲染后再移除 loading，避免黑屏闪烁
+  function hideLoading() {
+    const l = document.getElementById('loading');
+    if (!l || l.classList.contains('done')) return;
+    l.classList.add('done');
+    setTimeout(() => { if (l && l.parentNode) l.parentNode.removeChild(l); }, 800);
+  }
+  window.__HIDE_LOADING = hideLoading;
+
+  // ---- 启动守卫 ----------------------------------------------------------
+  // bundle.js 因任何原因没跑起来（路径错/被拦/初始化抛错），
+  // 绝不留一个无法解释的黑屏 —— 必须把原因显示出来。
+  var __bootOK = false;
+  window.__BOOT_OK = function () { __bootOK = true; };   // 初始化完成（游戏可玩）
+  window.__BUNDLE_RAN = function () { window.__RAN = true; };  // 脚本已执行（哪怕初始化还在跑）
+
+  function showFatal(title, detail) {
+    window.__SHOWN_FATAL = true;
+    var l = document.getElementById('loading');
+    if (!l) return;
+    l.className = 'fatal';
+    l.style.visibility = 'visible';
+    l.style.opacity = '1';
+    l.innerHTML =
+      '<div class="fatal-box">' +
+        '<div class="fatal-title">' + title + '</div>' +
+        '<div class="fatal-detail">' + String(detail).replace(/</g, '&lt;') + '</div>' +
+        '<div class="fatal-hint">请确认 <code>index.html</code> 与 <code>bundle.js</code> 在同一个文件夹内。' +
+        '若仍无法启动，可在该目录执行 <code>python3 -m http.server 8000</code>，再打开 <code>http://localhost:8000</code>。</div>' +
+      '</div>';
+  }
+  window.__FATAL = showFatal;
+
+  window.addEventListener('error', function (ev) {
+    if (__bootOK) return;
+    var t = ev && ev.target;
+    if (t && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+      showFatal('资源加载失败', '无法加载 ' + (t.src || t.href)); return;
+    }
+    showFatal('启动出错', (ev && ev.message) || '未知错误');
+  }, true);
+  window.addEventListener('unhandledrejection', function (ev) {
+    if (__bootOK) return;
+    showFatal('启动出错', (ev && ev.reason && ev.reason.message) || '未知错误');
+  });
+
+  // 判定标准：bundle.js 到底有没有被执行（不是"初始化有没有完成"）。
+  // 初始化里要生成一堆程序化纹理 + PMREM 环境贴图，慢机器上超过 4 秒很正常，
+  // 早先按"4 秒内没启动完成"来判会误报。
+  setTimeout(function () {
+    if (window.__RAN || __bootOK) return;
+    var l = document.getElementById('loading');
+    if (l && !l.classList.contains('done')) {
+      showFatal('游戏未能启动', 'bundle.js 没有被执行（脚本可能在加载时就被拦住了）。');
+    }
+  }, 5000);
+
+  // 只有确认 bundle 执行过才隐藏 loading；否则留着它，等守卫显示错误。
+  // 注意这里用 __RAN（脚本已执行），不是 __bootOK（初始化完成）——
+  // 后者在慢机器上要好几秒，期间 loading 应该继续转圈而不是消失。
+  // 真正的隐藏由 main.js 在 init 完成后调用 window.__HIDE_LOADING 触发。
+  setTimeout(function () {
+    if (window.__RAN) {
+      // 脚本已跑起来：若 3 秒内 init 还没完成，说明确实卡住了，交给守卫
+      setTimeout(function () {
+        if (!__bootOK && !window.__SHOWN_FATAL) {
+          showFatal('初始化超时', 'bundle.js 已加载，但游戏初始化没有完成（可能是 WebGL 不可用）。');
+        }
+      }, 12000);
+    }
+  }, 300);
+</script>
+<script src="./bundle.js"></script>
+
+</body>
+</html>
