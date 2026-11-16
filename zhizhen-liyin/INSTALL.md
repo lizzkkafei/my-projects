@@ -110,9 +110,9 @@ PR #15409 **已合并**，审核员 fkysly 指出：
 - [x] 提交 PR 到 `awesome-dsh-plugin` → [#15409](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15409)
 - [x] PR #15409 已合并
 - [x] v1.0.1 修复路由访问检查
-- [ ] **提 PR 更新条目，删掉限制句**：分支 `update-zhizhen-liyin-access` 已推送
-      https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/compare/main...lizzkkafei:awesome-dsh-plugin:update-zhizhen-liyin-access?expand=1
-- [ ] 等待新 PR 的 CI 与 review
+- [x] 提 PR 更新条目 → [#15700 Drop the route access disclosure](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15700)
+- [x] PR #15700 CI 全绿：`check` success + `Submission gate` success，mergeable / clean
+- [ ] 等待 #15700 合并（CI 已过，等维护者）
 - [ ] 可选：发布到 npm，安装时可跳过源码构建
 - [ ] 可选：打 GitHub Release 并附预构建 tarball
 
