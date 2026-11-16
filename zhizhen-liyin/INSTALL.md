@@ -9,7 +9,8 @@
 | 仓库 | `lizzkkafei/my-projects` |
 | 目录 | `zhizhen-liyin/` |
 | 包名 | `zhizhen-liyin` |
-| 版本 | 1.0.0 |
+| 版本 | 1.0.1 |
+| 最新提交 | `6fed06d` 路由访问检查 |
 | 提交 | `5f57b4c` 新增 → `7b5334b` 图标修正 → `fc1eb10` 标识统一 |
 | 安装 | `dsh plugin --profile <profile> add github:lizzkkafei/my-projects#path:/zhizhen-liyin` |
 
@@ -78,12 +79,40 @@ node scripts/make-icon.mjs
 5. 同步到 `my-projects` 仓库并推送
 6. 市场条目一般无需改动，除非功能描述变化
 
+## 审核反馈与修复（2026-11-16）
+
+PR #15409 **已合并**，审核员 fkysly 指出：
+
+> 它的 HTTP 路由是用 `webServer.register` 挂的，DSH 对这类路由不做 Host / Origin 准入，所以我在描述里写了「HTTP 路由没有 DSH 的访问检查」。
+
+市场条目因此被加了一句限制说明。审核员给了两条修法：
+
+1. handler 入口先过 `ctx.connection.requestRejection(req)` —— **采用**
+2. 或改用 `ctx.connection.fetch.register` 的精确路由 —— 不适用（见下）
+
+### 为什么选 requestRejection
+
+`fetch.register` 只支持**精确路径**，而本插件是一个 prefix 路由服务整个静态目录，外加一个代理前缀。无法逐个文件注册路径，所以保留 prefix 路由并在入口加检查。
+
+### 改动（v1.0.1）
+
+- `inject` 增加 `connection`
+- 每个 handler 入口先调 `requestRejection`，非 `undefined` 即回写状态码并终止
+- `connection` 不可用时返回 **503 拒绝服务**，不放行
+- 测试改用 DSH 真实的 `isTrustedApiRequest`，覆盖 5 类攻击 + 同源放行 + 缺服务拒服
+
+### 验证结果
+
+16 项检查：同源 iframe 与子资源放行，cross-site / 外部 Origin / DNS rebinding / 不透明 Origin 全部 403。同源 iframe 端到端：6 轨、5 素材、五线谱、嵌入模式正常，无控制台错误。
+
 ## 待办
 
 - [x] 提交 PR 到 `awesome-dsh-plugin` → [#15409](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/15409)
-- [ ] 等待 CI：`PR check` 里的 `npm ci` 已知会因 registry 503/504 挂起几十分钟（工作流注释有记录），与本次改动无关
-- [ ] 等待 `Submission gate` 结果（依赖 PR check 完成触发）
-- [ ] 维护者人工 review
+- [x] PR #15409 已合并
+- [x] v1.0.1 修复路由访问检查
+- [ ] **提 PR 更新条目，删掉限制句**：分支 `update-zhizhen-liyin-access` 已推送
+      https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/compare/main...lizzkkafei:awesome-dsh-plugin:update-zhizhen-liyin-access?expand=1
+- [ ] 等待新 PR 的 CI 与 review
 - [ ] 可选：发布到 npm，安装时可跳过源码构建
 - [ ] 可选：打 GitHub Release 并附预构建 tarball
 
