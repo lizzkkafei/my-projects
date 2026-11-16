@@ -179,6 +179,34 @@ export PATH="$PWD/.bin:$PATH" \
 - 把 `/api/liyin/ace/*` 反向代理到本机 ACE-Step
 - 拦截路径穿越（`../`）并返回 404
 
+### 访问检查
+
+`webServer.register` 挂的原始路由 **不受** DSH 的 Host / Origin 准入保护，所以每个 handler 入口都先调用 `ctx.connection.requestRejection(req)`：
+
+```js
+const rejection = ctx.connection.requestRejection(req)
+if (rejection !== undefined) {
+  res.writeHead(rejection)   // 401 未认证 / 403 不受信任
+  res.end()
+  return
+}
+```
+
+这道检查做了四件事：
+
+| 检查 | 拦截的攻击 |
+|---|---|
+| Host 必须是 loopback 或已声明的受信 authority | DNS rebinding（页面域名是攻击者的，连接却落到本机） |
+| `Sec-Fetch-Site: cross-site` 直接拒绝 | 恶意网页发起跨站请求 |
+| Origin 存在时必须与 Host 同源 | 其他站点的页面调用这些路由 |
+| 不透明 Origin（`null`，如沙箱 iframe / `file:` 页面）拒绝 | 沙箱逃逸尝试 |
+
+浏览器认证（cookie / 进程令牌）由同一次调用一并完成，未认证返回 401。
+
+若 `connection` 服务不可用，插件**拒绝服务**（503）而不是放行——宁可不可用，也不暴露无检查的路由。
+
+> 因此本插件不再需要「HTTP 路由无访问检查」这条限制说明。
+
 **Client 半（`src/entry.js` → `client.js`）**
 
 - 在 `conversation.input.left` 注册「理音」入口按钮
@@ -253,6 +281,7 @@ python3 serve.py                # → http://127.0.0.1:8090/
 - **多 take 合成是对齐后加权平均**，不是基于音高 / 节奏对齐的智能拼接。
 - **工程保存在浏览器 localStorage**，清缓存会丢本地状态。请用「导出工程 JSON」备份。
 - **录音需要麦克风授权**；无麦克风时只能使用已有素材。
+- **依赖 DSH 的 `connection` 服务做访问检查**：若所在 profile 没有该服务，插件会拒绝服务（503）而不是暴露无检查的路由。
 - 示例音频由 ACE-Step 生成，仅供演示工程用；正式发布作品请替换为你自己的素材。
 
 ---

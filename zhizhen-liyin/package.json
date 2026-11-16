@@ -1,6 +1,6 @@
 {
   "name": "zhizhen-liyin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "zhizhen-liyin — an AI-native music production workbench opened from a DSH session: multitrack arrangement, piano roll, score, recording, mixing, automation, and master/stem export with loudness normalization.",
@@ -51,5 +51,13 @@
     "ai-music",
     "ace-step"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/cordis": {
+      "optional": true
+    }
+  }
 }

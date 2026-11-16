@@ -11,7 +11,7 @@ import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const name = 'zhizhen-liyin'
-export const inject = ['webServer']
+export const inject = ['webServer', 'connection']
 
 const PACKAGE_ROOT = dirname(fileURLToPath(import.meta.url))
 const WEB_DIR = process.env.LIYIN_WEB_DIR || resolve(PACKAGE_ROOT, 'web')
@@ -116,6 +116,31 @@ async function proxyAce(req, res) {
   }
 }
 
+/**
+ * Apply DSH's Host/Origin fence and browser authentication to one raw Web
+ * request, mirroring how Connection guards its own `/api` route.
+ *
+ * Without this, any web page open in the same browser could call these routes:
+ * the server sees a plain loopback request and cannot tell it apart from the
+ * workbench itself.
+ *
+ * @returns true when the request was rejected and a response has been written.
+ */
+function rejectUntrusted(ctx, req, res) {
+  const connection = ctx.connection
+  if (!connection || typeof connection.requestRejection !== 'function') {
+    // Connection 不在本 profile 上：宁可不服务，也不暴露无检查的路由。
+    ctx.logger?.warn('[zhizhen-liyin] ctx.connection unavailable; refusing request')
+    json(res, 503, { error: 'connection service unavailable' })
+    return true
+  }
+  const rejection = connection.requestRejection(req)
+  if (rejection === undefined) return false
+  res.writeHead(rejection, { 'cache-control': 'no-store' })
+  res.end(rejection === 401 ? 'unauthorized' : 'forbidden')
+  return true
+}
+
 export function apply(ctx) {
   const webServer = ctx.webServer
   if (!webServer || typeof webServer.register !== 'function') {
@@ -125,8 +150,9 @@ export function apply(ctx) {
   webServer.register({
     kind: 'exact',
     path: PREFIX + '/health',
-    handler: async (_req, res) => {
-      json(res, 200, { ok: true, plugin: 'zhizhen-liyin', version: '1.0.0', webDir: WEB_DIR, ace: ACE_UPSTREAM })
+    handler: async (req, res) => {
+      if (rejectUntrusted(ctx, req, res)) return
+      json(res, 200, { ok: true, plugin: 'zhizhen-liyin', version: '1.0.1', webDir: WEB_DIR, ace: ACE_UPSTREAM })
     },
   })
   webServer.register({
@@ -134,6 +160,7 @@ export function apply(ctx) {
     path: PREFIX,
     handler: async (req, res) => {
       try {
+        if (rejectUntrusted(ctx, req, res)) return
         const url = new URL(req.url || '/', 'http://dsh.internal')
         if (url.pathname.startsWith(PREFIX + '/ace/')) return await proxyAce(req, res)
         if (url.pathname === PREFIX || url.pathname === PREFIX + '/') {
